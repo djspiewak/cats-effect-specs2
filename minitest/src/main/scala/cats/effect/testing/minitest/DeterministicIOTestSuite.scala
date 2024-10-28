@@ -18,11 +18,12 @@ package cats.effect.testing.minitest
 
 import scala.concurrent.ExecutionContext
 
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
 import cats.effect.laws.util.TestContext
 import scala.concurrent.duration._
 
 import minitest.api.{DefaultExecutionContext, TestSpec}
+import cats.effect.Temporal
 
 abstract class DeterministicIOTestSuite extends BaseIOTestSuite[TestContext] {
   override protected final def makeExecutionContext(): TestContext = TestContext()
@@ -32,7 +33,7 @@ abstract class DeterministicIOTestSuite extends BaseIOTestSuite[TestContext] {
 
   override final implicit def ioContextShift: ContextShift[IO] =
     executionContext.contextShift[IO](IO.ioEffect)
-  override final implicit def ioTimer: Timer[IO] = executionContext.timer[IO](IO.ioEffect)
+  override final implicit def ioTimer: Temporal[IO] = executionContext.timer[IO](IO.ioEffect)
 
 
   override protected[effect] def mkSpec(name: String, ec: TestContext, io: => IO[Unit]): TestSpec[Unit, Unit] =
