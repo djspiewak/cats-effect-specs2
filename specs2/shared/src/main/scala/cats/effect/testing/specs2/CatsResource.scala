@@ -38,44 +38,43 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
   // this isn't *ideal* because we'd really like to block the specs from even starting
   // but it does work on scalajs
   @volatile
-  private var gate: Option[Deferred[F, Unit]] = None
-  private var value: Option[Either[Throwable, A]] = None
-  private var shutdown: F[Unit] = ().pure[F]
+  private var gate: Option[Deferred[F, (Either[Throwable, A], F[Unit])]] = None
 
   override def beforeAll(): Unit = {
     val toRun = for {
-      d <- Deferred[F, Unit]
+      d <- Deferred[F, (Either[Throwable, A], F[Unit])]
       _ <- Sync[F] delay {
         gate = Some(d)
       }
 
       pair <- resource.attempt.allocated
-      (a, shutdownAction) = pair
 
-      _ <- Sync[F] delay {
-        value = Some(a)
-        shutdown = shutdownAction
-      }
-
-      _ <- d.complete(())
+      _ <- d.complete(pair)
     } yield ()
 
     UnsafeRun[F].unsafeToFuture(toRun, finiteResourceTimeout)
     ()
   }
 
-  override def afterAll(): Unit = {
-    UnsafeRun[F].unsafeToFuture(shutdown, finiteResourceTimeout)
-
-    gate = None
-    value = None
-    shutdown = ().pure[F]
-  }
+  override def afterAll(): Unit =
+    gate
+      .map(_.get._2F)
+      .map {
+        finiteResourceTimeout.foldl(_)(_.timeout(_))
+          .flatten
+          .guarantee(Sync[F].delay {
+            gate = None
+          })
+      }
+      .foreach(UnsafeRun[F].unsafeToFuture(_, finiteResourceTimeout))
 
   def withResource[R](f: A => F[R]): F[R] =
     gate match {
       case Some(g) =>
-        finiteResourceTimeout.foldl(g.get)(_.timeout(_)) *> Sync[F].delay(value.get).rethrow.flatMap(f)
+        finiteResourceTimeout
+          .foldl(g.get._1F)(_.timeout(_))
+          .rethrow
+          .flatMap(f)
 
       // specs2's runtime should prevent this case
       case None =>
