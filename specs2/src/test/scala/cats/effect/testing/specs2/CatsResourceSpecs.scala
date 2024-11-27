@@ -17,8 +17,8 @@
 package cats.effect.testing.specs2
 
 import cats.effect._
-import cats.effect.concurrent.Ref
 import org.specs2.mutable.Specification
+import cats.effect.Ref
 
 class CatsResourceSpecs extends Specification with CatsResourceIO[Ref[IO, Int]] {
   sequential

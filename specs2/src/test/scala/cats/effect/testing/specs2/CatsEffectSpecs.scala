@@ -17,9 +17,9 @@
 package cats.effect.testing.specs2
 
 import cats.effect.{IO, Resource}
-import cats.effect.concurrent.{Ref, Deferred}
 import cats.implicits._
 import org.specs2.mutable.Specification
+import cats.effect.{ Deferred, Ref }
 
 class CatsEffectSpecs extends Specification with CatsEffect {
 
