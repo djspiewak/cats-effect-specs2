@@ -17,9 +17,9 @@
 package cats.effect.testing
 package specs2
 
-import cats.effect.{Async, Deferred, Resource, Spawn, Sync}
+import cats.effect._
+import cats.effect.syntax.all._
 import cats.syntax.all._
-
 import org.specs2.specification.BeforeAfterAll
 
 import scala.concurrent.duration._
@@ -39,7 +39,7 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
   // but it does work on scalajs
   @volatile
   private var gate: Option[Deferred[F, Unit]] = None
-  private var value: Option[A] = None
+  private var value: Option[Either[Throwable, A]] = None
   private var shutdown: F[Unit] = ().pure[F]
 
   override def beforeAll(): Unit = {
@@ -49,7 +49,7 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
         gate = Some(d)
       }
 
-      pair <- resource.allocated
+      pair <- resource.attempt.allocated
       (a, shutdownAction) = pair
 
       _ <- Sync[F] delay {
@@ -75,7 +75,7 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
   def withResource[R](f: A => F[R]): F[R] =
     gate match {
       case Some(g) =>
-        g.get *> Sync[F].delay(value.get).flatMap(f)
+        finiteResourceTimeout.foldl(g.get)(_.timeout(_)) *> Sync[F].delay(value.get).rethrow.flatMap(f)
 
       // specs2's runtime should prevent this case
       case None =>
