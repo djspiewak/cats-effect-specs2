@@ -16,7 +16,6 @@
 
 package cats.effect.testing.utest
 
-import cats.syntax.all._
 import cats.effect.IO
 import utest.{Tests, assert, test}
 import scala.concurrent.duration._
