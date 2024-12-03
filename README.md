@@ -105,7 +105,7 @@ Early versions (`0.x.y`) were published under the `com.codecommit` groupId.
 ```scala
 import scala.concurrent.duration._
 import utest._
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect.IO
 import cats.effect.testing.utest.IOTestSuite
 
@@ -138,7 +138,7 @@ non-IO tests
 
 ```scala
 import scala.concurrent.duration._
-import cats.implicits._
+import cats.syntax.all._
 import cats.effect.IO
 import cats.effect.testing.minitest.IOTestSuite
 

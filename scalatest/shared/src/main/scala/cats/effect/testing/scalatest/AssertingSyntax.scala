@@ -19,7 +19,7 @@ package cats.effect.testing.scalatest
 import cats.Functor
 import cats.effect.Sync
 import org.scalatest.{Assertion, Assertions, Succeeded}
-import cats.implicits._
+import cats.syntax.all._
 
 /**
  * Copied from FS2

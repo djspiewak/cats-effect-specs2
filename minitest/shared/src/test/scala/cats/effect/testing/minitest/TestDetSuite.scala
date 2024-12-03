@@ -18,7 +18,7 @@ package cats.effect.testing.minitest
 
 import cats.effect.IO
 import scala.concurrent.duration._
-import cats.implicits._
+import cats.syntax.all._
 
 @deprecated("use TestControl instead", since = "1.5.0")
 object TestDetSuite extends DeterministicIOTestSuite {
