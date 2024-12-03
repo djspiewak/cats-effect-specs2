@@ -18,7 +18,6 @@ package cats.effect.testing.minitest
 
 import cats.effect.IO
 import scala.concurrent.duration._
-import cats.implicits._
 
 object TestNondetSuite extends IOTestSuite {
 

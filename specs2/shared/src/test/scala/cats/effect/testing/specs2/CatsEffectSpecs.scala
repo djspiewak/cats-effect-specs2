@@ -17,7 +17,7 @@
 package cats.effect.testing.specs2
 
 import cats.effect.{IO, Ref, Resource}
-import cats.implicits._
+import cats.syntax.all._
 import org.specs2.mutable.Specification
 
 class CatsEffectSpecs extends Specification with CatsEffect with CatsEffectSpecsPlatform {
