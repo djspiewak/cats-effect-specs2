@@ -20,12 +20,11 @@ ThisBuild / tlBaseVersion := "1.6"
 ThisBuild / startYear := Some(2020)
 ThisBuild / developers += tlGitHubDev("djspiewak", "Daniel Spiewak")
 
-ThisBuild / crossScalaVersions := Seq("3.3.4", "2.12.19", "2.13.12")
+ThisBuild / crossScalaVersions := Seq("3.3.4", "2.12.20", "2.13.15")
 
 ThisBuild / tlVersionIntroduced := Map("3" -> "1.1.1")
 
 ThisBuild / tlCiReleaseBranches := Seq("series/1.x")
-ThisBuild / tlSonatypeUseLegacyHost := false
 
 val CatsEffectVersion = "3.5.7"
 val ScalaTestVersion = "3.2.18"
