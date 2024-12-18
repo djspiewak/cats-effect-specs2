@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package cats.effect.testing.specs2
+package tests
 
+import cats.effect.testing.specs2.*
 import cats.effect.{IO, Ref, Resource}
-import cats.syntax.all._
+import cats.syntax.all.*
 import org.specs2.mutable.Specification
 
 class CatsEffectSpecs extends Specification with CatsEffect with CatsEffectSpecsPlatform {

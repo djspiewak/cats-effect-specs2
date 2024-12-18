@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package cats.effect
-package testing.specs2
+package tests
 
+import cats.effect.*
+import cats.effect.testing.specs2.*
 import org.specs2.mutable.SpecificationLike
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class CatsResourceParallelSpecs extends CatsResource[IO, Unit] with SpecificationLike {
   // *not* sequential

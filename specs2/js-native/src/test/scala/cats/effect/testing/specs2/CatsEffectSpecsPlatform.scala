@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cats.effect.testing.specs2
+package tests
 
 trait CatsEffectSpecsPlatform { this: CatsEffectSpecs =>
   def platformSpecs = "really execute effects" in skipped

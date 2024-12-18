@@ -17,12 +17,14 @@
 package cats.effect.testing
 package specs2
 
-import cats.effect._
-import cats.effect.syntax.all._
-import cats.syntax.all._
+import cats.effect.*
+import cats.effect.syntax.all.*
+import cats.syntax.all.*
+import org.specs2.execute.Result
 import org.specs2.specification.BeforeAfterAll
+import org.typelevel.scalaccompat.annotation.unused
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll with CatsEffect {
 
@@ -72,7 +74,7 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
     shutdown = ().pure[F]
   }
 
-  def withResource[R](f: A => F[R]): F[R] =
+  private[specs2] def withResource[R](f: A => F[R]): F[R] =
     gate match {
       case Some(g) =>
         finiteResourceTimeout.foldl(g.get)(_.timeout(_)) *> Sync[F].delay(value.get).rethrow.flatMap(f)
@@ -81,4 +83,35 @@ abstract class CatsResource[F[_]: Async: UnsafeRun, A] extends BeforeAfterAll wi
       case None =>
         Spawn[F].cede >> withResource(f)
     }
+
+  def withResource[B: AsFutureResult](f: A => B): F[Result] =
+    withResource { (a: A) =>
+      Async[F].bracket(before(a)) { aAsModifiedByBefore =>
+        Async[F].fromFuture {
+          Sync[F].delay {
+            AsFutureResult[B].asResult(f(aAsModifiedByBefore))
+          }
+        }
+      }(after)
+    }
+
+  /**
+   * Override this to modify the resource before it is used, or to use the
+   * resource to perform some setup work, prior to each test.
+   *
+   * The default implementation simply returns the resource unchanged.
+   *
+   * @param a the resource, having been acquired in the beforeAll phase
+   * @return the modified resource, which will be passed to the test function
+   */
+  def before(a: A): F[A] = a.pure[F]
+
+  /**
+   * Override this to perform some cleanup after each test.
+   *
+   * The default implementation does nothing.
+   *
+   * @param a the resource, having been acquired in the beforeAll phase
+   */
+  def after(@unused a: A): F[Unit] = ().pure[F]
 }

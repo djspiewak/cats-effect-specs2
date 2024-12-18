@@ -18,14 +18,13 @@ package cats.effect.testing
 package specs2
 
 import cats.effect.{MonadCancel, Resource}
-import cats.syntax.all._
-
+import cats.syntax.all.*
 import org.specs2.execute.AsResult
 import org.specs2.specification.core.{AsExecution, Execution}
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
-trait CatsEffect {
+trait CatsEffect extends LowPriorityAsExecutionInstances {
 
   protected val Timeout: Duration = 10.seconds
   protected def finiteTimeout: Option[FiniteDuration] =
@@ -43,5 +42,14 @@ trait CatsEffect {
   implicit def resourceAsExecution[F[_]: UnsafeRun, R](implicit F: MonadCancel[F, Throwable], R: AsResult[R]): AsExecution[Resource[F, R]] = new AsExecution[Resource[F, R]] {
     def execute(t: => Resource[F, R]): Execution =
       effectAsExecution[F, R].execute(t.use(_.pure[F]))
+  }
+}
+
+sealed trait LowPriorityAsExecutionInstances { this: CatsEffect =>
+  implicit def asFutureResultAsExecution[F[_], A](implicit AFR: AsFutureResult[F[A]]): AsExecution[F[A]] = new AsExecution[F[A]] {
+    override def execute(t: => F[A]): Execution =
+      Execution
+        .withEnvAsync(_ => AsFutureResult[F[A]].asResult(t))
+        .copy(timeout = finiteTimeout)
   }
 }
