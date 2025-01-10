@@ -92,7 +92,7 @@ lazy val utest = project
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
       "org.typelevel" %% "cats-effect-laws" % CatsEffectVersion,
-      "com.lihaoyi" %% "utest" % "0.8.4"))
+      "com.lihaoyi" %% "utest" % "0.8.5"))
 
 lazy val minitest = project
   .in(file("minitest"))
