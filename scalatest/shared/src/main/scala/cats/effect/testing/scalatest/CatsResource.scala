@@ -24,7 +24,7 @@ import org.scalatest.{BeforeAndAfterAll, FixtureAsyncTestSuite, FutureOutcome, O
 
 import scala.concurrent.duration._
 
-trait CatsResource[F[_], A] extends BeforeAndAfterAll { this: FixtureAsyncTestSuite =>
+trait CatsResource[F[_], A] extends BeforeAndAfterAll with GlobalExecutionContext { this: FixtureAsyncTestSuite =>
 
   def ResourceAsync: Async[F]
   private[this] implicit def _ResourceAsync: Async[F] = ResourceAsync
@@ -73,11 +73,18 @@ trait CatsResource[F[_], A] extends BeforeAndAfterAll { this: FixtureAsyncTestSu
   }
 
   override def afterAll(): Unit = {
-    UnsafeRun[F].unsafeToFuture(shutdown, finiteResourceTimeout)
-
-    gate = None
-    value = None
-    shutdown = ().pure[F]
+    UnsafeRun[F].unsafeToFuture(
+      for {
+        _ <- shutdown
+        _ <- Sync[F] delay {
+          gate = None
+          value = None
+          shutdown = ().pure[F]
+        }
+      } yield (),
+      finiteResourceTimeout
+    )
+    ()
   }
 
   override type FixtureParam = A
