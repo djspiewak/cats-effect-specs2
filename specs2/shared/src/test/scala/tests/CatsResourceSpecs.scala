@@ -14,30 +14,33 @@
  * limitations under the License.
  */
 
-package cats.effect.testing.specs2
+package tests
 
-import cats.effect.{IO, Resource}
-import org.specs2.execute.Result
+import cats.effect.testing.specs2.*
+import cats.effect.{IO, Ref, Resource}
 import org.specs2.mutable.SpecificationLike
 
-case class BlowUpResourceException() extends RuntimeException("boom")
+class CatsResourceSpecs extends CatsResource[IO, Ref[IO, Int]] with SpecificationLike {
+  sequential
 
-class CatsResourceErrorSpecs
-  extends CatsResource[IO, Unit]
-    with SpecificationLike {
-
-  private val expectedException = BlowUpResourceException()
-
-  val resource: Resource[IO, Unit] =
-    Resource.eval(IO.raiseError(expectedException))
+  val resource: Resource[IO, Ref[IO, Int]] =
+    Resource.make(Ref[IO].of(0))(_.set(Int.MinValue))
 
   "cats resource support" should {
-    "report failure when the resource acquisition fails" in withResource[Result] { _ =>
-      IO(failure("we shouldn't get here if an exception was raised"))
+    "run a resource modification" in withResource { ref =>
+      ref.modify{a =>
+        (a + 1, a)
+      }.map(
+        _ must_=== 0
+      )
     }
-      .recover[Result] {
-        case ex: RuntimeException =>
-          ex must beEqualTo(expectedException)
-      }
+
+    "be shared between tests" in withResource {ref =>
+      ref.modify{a =>
+        (a + 1, a)
+      }.map(
+        _ must_=== 1
+      )
+    }
   }
 }

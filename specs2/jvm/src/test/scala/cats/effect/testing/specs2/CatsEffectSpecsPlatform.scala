@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cats.effect.testing.specs2
+package tests
 
 import cats.effect.IO
 

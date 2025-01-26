@@ -41,4 +41,8 @@ object UnsafeRun {
     override def unsafeToFuture[A](ioa: IO[A], timeout: Option[FiniteDuration]): Future[A] =
       timeout.fold(ioa)(ioa.timeout).unsafeToFuture()
   }
+
+  implicit val unsafeRunScalaFuture: UnsafeRun[scala.concurrent.Future] = new UnsafeRun[scala.concurrent.Future] {
+    override def unsafeToFuture[AA](fa: scala.concurrent.Future[AA]): scala.concurrent.Future[AA] = fa
+  }
 }
