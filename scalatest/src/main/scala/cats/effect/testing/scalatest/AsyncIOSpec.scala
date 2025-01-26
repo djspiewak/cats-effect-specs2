@@ -16,18 +16,19 @@
 
 package cats.effect.testing.scalatest
 
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
 import org.scalactic.source.Position
 import org.scalatest.AsyncTestSuite
 import org.scalatest.enablers.Retrying
 import org.scalatest.time.Span
 
 import scala.concurrent.ExecutionContext
+import cats.effect.Temporal
 
 trait AsyncIOSpec extends AssertingSyntax with EffectTestSupport { asyncTestSuite: AsyncTestSuite =>
   override val executionContext: ExecutionContext = ExecutionContext.global
   implicit val ioContextShift: ContextShift[IO] = IO.contextShift(executionContext)
-  implicit val ioTimer: Timer[IO] = IO.timer(executionContext)
+  implicit val ioTimer: Temporal[IO] = IO.timer(executionContext)
 
   implicit def ioRetrying[T]: Retrying[IO[T]] = new Retrying[IO[T]] {
     override def retry(timeout: Span, interval: Span, pos: Position)(fun: => IO[T]): IO[T] =

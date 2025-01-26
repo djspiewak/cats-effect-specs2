@@ -17,9 +17,9 @@
 package cats.effect.testing.scalatest
 
 import cats.effect._
-import cats.effect.concurrent.Ref
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.FixtureAsyncWordSpec
+import cats.effect.Ref
 
 class CatsResourceSpecs extends FixtureAsyncWordSpec with AsyncIOSpec with CatsResourceIO[Ref[IO, Int]] {
 
